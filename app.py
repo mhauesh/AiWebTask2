@@ -18,7 +18,6 @@ def init_crawler():
         crawler.crawl()
     return crawler
 
-# Initialize crawler globally
 crawler = init_crawler()
 
 @app.route('/')
