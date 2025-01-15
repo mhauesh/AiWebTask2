@@ -2,6 +2,18 @@ from flask import Flask, render_template, request
 from whoosh_crawler import WebCrawler
 import os
 from pathlib import Path
+import traceback
+import sys
+
+@app.errorhandler(500)
+def internal_error(exception):
+    print(traceback.format_exc(), file=sys.stderr)  # This will log to your error log
+    return "<pre>" + traceback.format_exc() + "</pre>"
+
+@app.errorhandler(Exception)
+def unhandled_exception(e):
+    print(traceback.format_exc(), file=sys.stderr)  # This will log to your error log
+    return "<pre>" + traceback.format_exc() + "</pre>"
 
 app = Flask(__name__)
 
