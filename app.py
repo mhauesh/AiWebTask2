@@ -39,7 +39,7 @@ def home():
     """Display search form"""
     return render_template('search.html')
 
-@app.route('u101/AiWebTask2/search')
+@app.route('/search')
 def search():
     """Handle search requests"""
     query = request.args.get('q', '')
