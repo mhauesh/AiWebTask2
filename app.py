@@ -7,7 +7,6 @@ import sys
 
 app = Flask(__name__)
 
-
 @app.errorhandler(500)
 def internal_error(exception):
     print(traceback.format_exc(), file=sys.stderr)  # logging to error log
@@ -17,6 +16,7 @@ def internal_error(exception):
 def unhandled_exception(e):
     print(traceback.format_exc(), file=sys.stderr)  # logging to error log
     return "<pre>" + traceback.format_exc() + "</pre>"
+
 
 
 # Initialize the crawler and build index if needed
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     <h1>Web Crawler Search</h1>
     
     <div class="search-box">
-        <form action="/search" method="get">
+        <form action="search" method="get">
             <input type="text" name="q" value="{{ query or '' }}" placeholder="Enter search terms...">
             <input type="submit" value="Search">
         </form>
