@@ -7,6 +7,7 @@ import sys
 
 app = Flask(__name__)
 
+user = '/u101'
 @app.errorhandler(500)
 def internal_error(exception):
     print(traceback.format_exc(), file=sys.stderr)  # logging to error log
@@ -121,7 +122,7 @@ if __name__ == '__main__':
     <h1>Web Crawler Search</h1>
     
     <div class="search-box">
-        <form action="search" method="get">
+        <form action="{{ url_for('search') }}" method="get">
             <input type="text" name="q" value="{{ query or '' }}" placeholder="Enter search terms...">
             <input type="submit" value="Search">
         </form>
