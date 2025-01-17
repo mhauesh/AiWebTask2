@@ -34,3 +34,6 @@ Before running this project, make sure you have the following installed:
 
 Once the application is running, you can access it in your browser at:
 http://127.0.0.1:5000/
+
+This is the public address on the server, you can access it in your browser at:
+http://vm146.rz.uni-osnabrueck.de/u101/app.wsgi/s
