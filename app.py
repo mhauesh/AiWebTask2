@@ -1,21 +1,23 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for
 from whoosh_crawler import WebCrawler
 import os
 from pathlib import Path
 import traceback
 import sys
 
+app = Flask(__name__)
+
+
 @app.errorhandler(500)
 def internal_error(exception):
-    print(traceback.format_exc(), file=sys.stderr)  # This will log to your error log
+    print(traceback.format_exc(), file=sys.stderr)  # logging to error log
     return "<pre>" + traceback.format_exc() + "</pre>"
 
 @app.errorhandler(Exception)
 def unhandled_exception(e):
-    print(traceback.format_exc(), file=sys.stderr)  # This will log to your error log
+    print(traceback.format_exc(), file=sys.stderr)  # logging to error log
     return "<pre>" + traceback.format_exc() + "</pre>"
 
-app = Flask(__name__)
 
 # Initialize the crawler and build index if needed
 BASE_DIR = Path(__file__).resolve().parent
@@ -48,26 +50,24 @@ def search():
         results = crawler.search(query)
         print(f"Query: {query}")  # Debug print
         print(f"Found {len(results)} results")  # Debug print
-        for url, title in results:
+        for url, title, teaser in results:
             print(f"- {title}: {url}")  # Debug print
+            print(f"  {teaser}")  # Debug print
         return render_template('search.html', query=query, results=results)
     except Exception as e:
         print(f"Search error: {e}")  # Debug print
         return render_template('search.html', query=query, error=str(e))
 
 if __name__ == '__main__':
-    # Ensure the templates directory exists
     templates_dir = BASE_DIR / "templates"
     templates_dir.mkdir(exist_ok=True)
-    
-    # Save the template file
     template_path = templates_dir / "search.html"
     if not template_path.exists():
         template_content = """<!DOCTYPE html>
 <html>
 <head>
     <title>Web Crawler Search</title>
-    <style>
+    <style>Search error: too many values
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
@@ -107,6 +107,9 @@ if __name__ == '__main__':
             color: #006621;
             font-size: 14px;
         }
+        .result-teaser {
+            margin: 10px 0;
+            }
         .error {
             color: red;
             margin: 20px 0;
@@ -131,12 +134,13 @@ if __name__ == '__main__':
     {% if results %}
         <div class="results">
             <h2>Search Results</h2>
-            {% for url, title in results %}
+            {% for url, title, teaser in results %}
                 <div class="result-item">
                     <div class="result-title">
                         <a href="{{ url }}">{{ title or 'Untitled Page' }}</a>
                     </div>
                     <div class="result-url">{{ url }}</div>
+                    <div class="result-teaser">{{ teaser|safe }}</div>
                 </div>
             {% endfor %}
         </div>

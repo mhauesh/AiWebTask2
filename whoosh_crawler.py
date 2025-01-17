@@ -7,6 +7,7 @@ from pathlib import Path
 from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, ID, STORED
 from whoosh.qparser import MultifieldParser
+from whoosh import highlight
 
 class WebCrawler:
     def __init__(self, start_url, index_dir="whoosh_index"):
@@ -23,7 +24,7 @@ class WebCrawler:
         self.schema = Schema(
             url=ID(stored=True, unique=True),
             title=TEXT(stored=True),
-            content=TEXT(stored=True)  # Store content for debugging
+            content=TEXT(stored=True, chars=True)  # Store content for debugging
         )
         
         # Try to open existing index or create new one
@@ -117,7 +118,7 @@ class WebCrawler:
     def search(self, query_str):
         """
         Search the index for pages matching the query.
-        Returns list of (url, title) tuples.
+        Returns list of (url, title, teaser) tuples.
         """
         with self.ix.searcher() as searcher:
             # Search in both title and content
@@ -126,21 +127,32 @@ class WebCrawler:
             
             results = searcher.search(query, limit=None)  # No limit on results
             print(f"Found {len(results)} results for '{query_str}'")  # Debug print
-            
-            return [(hit['url'], hit.get('title', 'Untitled')) for hit in results]
+            print(results)  # Debug print
+
+            # Set up the highlighter
+            results.fragmenter = highlight.ContextFragmenter(maxchars=200, surround=100)
+            results.formatter = highlight.HtmlFormatter(tagname="b", classname="highlight", termclass="term")
+
+
+            return [
+                (hit['url'],
+                 hit.get('title', 'Untitled'),
+                 hit.highlights("content")
+                 )
+                    for hit in results]
 
 def main():
     """Example usage of the WebCrawler with Whoosh"""
-    # Create crawler instance
+    # Create crawler
     start_url = "https://vm009.rz.uos.de/crawl/index.html"
     crawler = WebCrawler(start_url)
     
-    # Crawl the website
+    # Printing for debugging
     print("Starting crawl...")
     crawler.crawl()
     print(f"Crawl complete. Visited {len(crawler.visited_urls)} pages")
     
-    # Interactive search
+    # Test search
     print("\nEnter search query, or 'quit' to exit")
     while True:
         query = input("\nSearch query: ").strip()
@@ -153,9 +165,10 @@ def main():
         
         # Display results
         print(f"\nFound {len(results)} pages:")
-        for url, title in results:
+        for url, title, teaser in results:
             print(f"  - {title}")
             print(f"    {url}")
+            print(f"    {teaser}")
             
     print("\nGoodbye!")
 
